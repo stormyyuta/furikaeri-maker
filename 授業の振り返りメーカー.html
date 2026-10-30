@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>授業の振り返りメーカー</title>
+<style>
+:root{--bg:#fbf8f3;--card:#fff;--ink:#2b2a28;--sub:#78736b;--line:#e6e0d6;--ac:#e8743b;--acink:#fff;--chip:#f3ede3;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1b19;--card:#262522;--ink:#f1ede6;--sub:#a49e94;--line:#3a3834;--ac:#f08a52;--acink:#1c1b19;--chip:#32302c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1b19;--card:#262522;--ink:#f1ede6;--sub:#a49e94;--line:#3a3834;--ac:#f08a52;--acink:#1c1b19;--chip:#32302c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.7}
+main{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px}
+.lead{color:var(--sub);margin:0 0 16px;font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+label.t{display:block;font-weight:700;font-size:.9rem;margin-bottom:8px}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;background:var(--bg);color:var(--ink);line-height:1.7}
+textarea{min-height:140px;resize:vertical}
+textarea.s{min-height:90px}
+textarea:focus,input:focus{outline:2px solid var(--ac);outline-offset:1px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;font-size:.88rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ac);color:var(--acink);border-color:var(--ac);font-weight:700}
+.tabs{margin-bottom:16px}
+.tabs .chip{font-size:.95rem;padding:8px 18px}
+.grp{margin-top:14px}
+.grp small{display:block;color:var(--sub);margin-bottom:6px;font-size:.8rem}
+button.main{width:100%;margin-top:16px;border:0;border-radius:14px;background:var(--ac);color:var(--acink);font:inherit;font-weight:700;font-size:1.05rem;padding:14px;cursor:pointer}
+button.main:disabled{opacity:.5;cursor:default}
+.err{color:#c0392b;font-size:.9rem;margin-top:8px}
+.note{color:var(--sub);font-size:.82rem;margin:6px 0 0}
+.cnt{color:var(--sub);font-size:.85rem;margin-left:auto}
+.hide{display:none}
+details summary{cursor:pointer;font-weight:700}
+.sm{display:flex;gap:8px;align-items:flex-start;border-top:1px solid var(--line);padding:10px 0;font-size:.85rem}
+.sm div{flex:1;white-space:pre-wrap}
+.sm button,.h button{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;padding:2px 10px;cursor:pointer;font:inherit;font-size:.8rem}
+.h{border-top:1px solid var(--line);padding:12px 0}
+.h .meta{color:var(--sub);font-size:.8rem;margin-bottom:4px}
+.h .body{white-space:pre-wrap;font-size:.92rem}
+.h .row{margin-top:8px;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<h1>📝 授業の振り返りメーカー</h1>
+<p class="lead">授業でやったことをそのまま書く（または話す）だけ。小学6年生らしい振り返りにします。</p>
+
+<div class="row tabs" id="tabs">
+  <button class="chip" type="button" aria-pressed="true" data-t="write">✏️ 書く</button>
+  <button class="chip" type="button" aria-pressed="false" data-t="hist">📚 これまでの振り返り（<span id="hcnt">0</span>）</button>
+</div>
+
+<section id="tw">
+<div class="card">
+  <div class="grp" style="margin-top:0"><small>教科</small>
+    <div class="row" data-g="subj">
+      <button class="chip" type="button" aria-pressed="true" data-v="社会">社会</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="算数">算数</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="理科">理科</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="家庭科">家庭科</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="国語">国語</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="その他">その他</button>
+    </div>
+  </div>
+  <div class="grp" id="customBox">
+    <details id="fmtDet"><summary>📐 書き方の型<span id="fmtState"></span></summary>
+      <p class="note" id="fmtNote"></p>
+      <textarea id="custom" class="s" style="margin-top:8px" placeholder="例：①心に残った表現 ②その理由 ③次に読みたい本　の形で"></textarea>
+      <div class="row" style="margin-top:8px"><button class="chip" id="fmtReset" type="button">もとの型にもどす</button></div>
+    </details>
+  </div>
+
+  <div class="grp"><label class="t" for="goal">今日のめあて（なくてもOK）</label>
+    <input type="text" id="goal" placeholder="例：分数のわり算の計算のしかたを考えよう">
+  </div>
+
+  <div class="grp"><label class="t" for="inp">今日の授業でやったこと</label>
+    <textarea id="inp" placeholder="例：今日は〇〇について調べた。△△さんの意見を聞いて、…と考えが変わった。"></textarea>
+    <div class="row" style="margin-top:10px"><button class="chip hide" id="mic" type="button">🎤 話して入力</button></div>
+  </div>
+
+  <div class="grp" id="mkBox" style="display:none"><small>今日使った見方・考え方（えらばなくてもOK・いくつでも）</small>
+    <div class="row" id="mkChips"></div>
+    <p class="note" id="mkDesc"></p>
+  </div>
+
+  <div class="grp"><small>長さ</small>
+    <div class="row" data-g="len">
+      <button class="chip" type="button" aria-pressed="false" data-v="short">短め</button>
+      <button class="chip" type="button" aria-pressed="true" data-v="mid">ふつう</button>
+      <button class="chip" type="button" aria-pressed="false" data-v="long">しっかり</button>
+    </div>
+  </div>
+
+  <button class="main" id="go" type="button">振り返りを書く</button>
+  <div class="err hide" id="err"></div>
+</div>
+
+<div class="card hide" id="res">
+  <div class="row" style="margin-bottom:8px"><label class="t" for="out" style="margin:0">できた振り返り（直してOK）</label><span class="cnt" id="count">0字</span></div>
+  <textarea id="out"></textarea>
+  <div class="row" style="margin-top:12px">
+    <button class="chip" id="copy" type="button">コピー</button>
+    <button class="chip" id="save" type="button">⭐ お手本に保存</button>
+    <button class="chip" id="del" type="button">🗑 消す</button>
+    <span id="delq" class="hide">本当に消しますか？（これまでの振り返りからも消えます） <button class="chip" id="delyes" type="button">はい</button> <button class="chip" id="delno" type="button">いいえ</button></span>
+  </div>
+  <div class="grp"><small>書き直すときのヒント（なくてもOK）</small>
+    <div class="row" id="hints">
+      <button class="chip" type="button" data-h="もっと短くして">もっと短く</button>
+      <button class="chip" type="button" data-h="もっとくわしくして">もっとくわしく</button>
+      <button class="chip" type="button" data-h="具体的な例や場面を入れて">具体的に</button>
+      <button class="chip" type="button" data-h="友達の意見を聞いて考えが変わったことを入れて">友達の意見を入れて</button>
+      <button class="chip" type="button" data-h="むずかしい言葉をやさしい言葉にして">やさしい言葉で</button>
+    </div>
+    <input type="text" id="hint" style="margin-top:8px" placeholder="例：「次にやりたいこと」をもっとくわしく">
+    <button class="main" id="again" type="button" style="margin-top:10px">ヒントをもとに書き直す</button>
+  </div>
+  <p class="note">この振り返りは「これまでの振り返り」にも自動で残ります。</p>
+</div>
+
+<div class="card">
+  <details>
+    <summary>⭐ お手本（<span id="cnt">0</span>件）</summary>
+    <p class="note">自分で書いた振り返りや、先生にほめられた振り返りを入れておくと、言い回しや長さを学んで似せて書きます。いまの教科：<b id="curSubj">社会</b></p>
+    <textarea id="paste" class="s" placeholder="過去の振り返りをここに貼り付け（1件ずつ）"></textarea>
+    <div class="row" style="margin-top:10px"><button class="chip" id="add" type="button">お手本に追加</button></div>
+    <div id="list"></div>
+    <div class="err hide" id="serr"></div>
+  </details>
+</div>
+</section>
+
+<section id="th" class="hide">
+  <div class="card">
+    <div class="grp" style="margin-top:0"><small>教科でしぼる</small>
+      <div class="row" id="hf"></div>
+    </div>
+    <p class="note">このアプリで作った振り返りが、新しい順に並びます（最大100件）。直した内容も反映されます。</p>
+    <div id="hlist"></div>
+  </div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const sel={subj:"社会",len:"mid"};
+const MAXK=5;
+const SUBJ=["社会","算数","理科","家庭科","国語","その他"];
+let data={};   // お手本 {教科:[文章]}
+let hist=[];   // 履歴 [{id,ts,subj,text}]
+let curId=null, hfilter="すべて";
+
+// ---- 保存（db→だめならlocalStorage） ----
+let store=null;
+async function initStore(){
+  try{
+    const db=await claude.use("db"),user=await claude.use("user");
+    if(db&&user){
+      const uid=await user.id();
+      if(uid){
+        const ref=n=>db.doc("data/users/"+uid+"/"+n);
+        store={
+          load:async n=>{const s=await ref(n).get();return s.exists&&s.data().v?JSON.parse(s.data().v):null;},
+          save:async(n,d)=>{await ref(n).set({v:JSON.stringify(d)});}};
+      }
+    }
+  }catch(_){}
+  if(!store){
+    const key=n=>n==="samples"?"furikaeri":"furikaeri_"+n;
+    store={
+      load:async n=>{try{return JSON.parse(localStorage.getItem(key(n))||"null");}catch(_){return null;}},
+      save:async(n,d)=>{try{localStorage.setItem(key(n),JSON.stringify(d));}catch(_){}}};
+  }
+  try{data=(await store.load("samples"))||{};}catch(_){data={};}
+  try{hist=(await store.load("history"))||[];}catch(_){hist=[];}
+  renderList();renderHist();
+}
+initStore();
+function showErr(){$("serr").textContent="保存できませんでした。";$("serr").classList.remove("hide");}
+async function saveSamples(){renderList();try{await store.save("samples",data);$("serr").classList.add("hide");}catch(_){showErr();}}
+async function saveHist(){renderHist();try{await store.save("history",hist);}catch(_){showErr();}}
+
+// ---- お手本 ----
+function renderList(){
+  const arr=data[sel.subj]||[];
+  $("curSubj").textContent=sel.subj;$("cnt").textContent=arr.length;
+  const l=$("list");l.textContent="";
+  arr.forEach((t,i)=>{
+    const r=document.createElement("div");r.className="sm";
+    const d=document.createElement("div");d.textContent=t;
+    const b=document.createElement("button");b.textContent="削除";
+    const q=document.createElement("span");q.style.display="none";
+    q.append("本当に削除しますか？ ");
+    const y=document.createElement("button");y.textContent="はい";
+    const n=document.createElement("button");n.textContent="いいえ";n.style.marginLeft="4px";
+    q.append(y,n);
+    b.addEventListener("click",()=>{b.style.display="none";q.style.display="inline";});
+    n.addEventListener("click",()=>{q.style.display="none";b.style.display="";});
+    y.addEventListener("click",()=>{arr.splice(i,1);saveSamples();});
+    r.append(d,b,q);l.append(r);
+  });
+}
+function addSample(t,subj){
+  t=(t||"").trim();if(!t)return false;
+  const a=data[subj]=data[subj]||[];
+  if(a.includes(t))return true;
+  a.push(t);if(a.length>20)a.shift();
+  saveSamples();return true;
+}
+$("add").addEventListener("click",()=>{addSample($("paste").value,sel.subj);$("paste").value="";});
+function flash(btn,msg,orig){btn.textContent=msg;setTimeout(()=>{btn.textContent=orig;},2000);}
+$("save").addEventListener("click",()=>{
+  syncHist();addSample($("out").value,sel.subj);flash($("save"),"保存しました ✓","⭐ お手本に保存");
+});
+
+// ---- 履歴 ----
+function fmtDate(ts){return new Date(ts).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});}
+function renderHist(){
+  $("hcnt").textContent=hist.length;
+  const f=$("hf");f.textContent="";
+  ["すべて",...SUBJ].forEach(s=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=s;
+    b.setAttribute("aria-pressed",String(hfilter===s));
+    b.addEventListener("click",()=>{hfilter=s;renderHist();});f.append(b);
+  });
+  const l=$("hlist");l.textContent="";
+  const items=hist.filter(h=>hfilter==="すべて"||h.subj===hfilter).slice().reverse();
+  if(!items.length){const p=document.createElement("p");p.className="note";p.textContent="まだありません。";l.append(p);return;}
+  items.forEach(h=>{
+    const box=document.createElement("div");box.className="h";
+    const m=document.createElement("div");m.className="meta";m.textContent=fmtDate(h.ts)+"　"+h.subj+"　"+cnt(h.text)+"字";
+    const bd=document.createElement("div");bd.className="body";bd.textContent=h.text;
+    const r=document.createElement("div");r.className="row";
+    const c=document.createElement("button");c.textContent="コピー";
+    c.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(h.text);flash(c,"コピーしました ✓","コピー");}catch(_){flash(c,"コピーできません","コピー");}});
+    const s=document.createElement("button");s.textContent="⭐ お手本に";
+    s.addEventListener("click",()=>{addSample(h.text,h.subj);flash(s,"保存しました ✓","⭐ お手本に");});
+    const d=document.createElement("button");d.textContent="削除";
+    const q=document.createElement("span");q.style.display="none";q.append("本当に削除しますか？ ");
+    const y=document.createElement("button");y.textContent="はい";
+    const n=document.createElement("button");n.textContent="いいえ";
+    q.append(y," ",n);
+    d.addEventListener("click",()=>{d.style.display="none";q.style.display="inline";});
+    n.addEventListener("click",()=>{q.style.display="none";d.style.display="";});
+    y.addEventListener("click",()=>{hist=hist.filter(x=>x.id!==h.id);if(curId===h.id)curId=null;saveHist();});
+    r.append(c,s,d,q);box.append(m,bd,r);l.append(box);
+  });
+}
+function syncHist(){
+  const h=hist.find(x=>x.id===curId);
+  if(h&&h.text!==$("out").value){h.text=$("out").value;saveHist();}
+}
+function cnt(t){return [...(t||"").replace(/\s/g,"")].length;}
+function updCount(){$("count").textContent=cnt($("out").value)+"字";}
+$("out").addEventListener("input",updCount);
+$("out").addEventListener("change",syncHist);
+
+// ---- タブ・選択 ----
+$("tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  document.querySelectorAll("#tabs .chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed","true");
+  $("tw").classList.toggle("hide",b.dataset.t!=="write");
+  $("th").classList.toggle("hide",b.dataset.t!=="hist");
+});
+const EX={
+  社会:["〇〇は、どのようにして△△したのだろう。","〇〇について資料を読んだ。△△ということが分かった。グループで〇〇について話し合って、□□という意見を聞いた。"],
+  算数:["〇〇の計算のしかたを考えよう。","〇〇の問題を、図や式を使って考えた。△△すればいいことに気づいた。□□さんの説明を聞いて、△△のわけが分かった。"],
+  理科:["〇〇を調べよう。","〇〇を△△して調べた。□□という結果になった。〇〇には△△というとくちょうがあることが分かった。"],
+  家庭科:["〇〇について考えて、△△しよう。","〇〇について学習した。△△をやってみて、□□ということに気づいた。"],
+  国語:["〇〇を読み取り、自分の考えをまとめよう。","〇〇という文章を読んだ。△△ということが書いてあると分かった。友達と〇〇について話し合った。"],
+  その他:["〇〇について考えよう。","〇〇をやった。△△ということが分かった。"]
+};
+function setPh(){const e=EX[sel.subj];$("goal").placeholder="例："+e[0];$("inp").placeholder="例："+e[1];}
+const CUSTOM=["国語","その他"];
+setPh();
+
+// ---- 書き方の型（教科ごとに、そのときだけ変更できる）----
+const DEFFMT={
+  社会:"①使った見方・考え方 ②今日の気づき ③次の時間に深めたい問い",
+  算数:"①今日やったこと・今日のポイント（問題を解くにあたって共通しているもの） ②今日考えたことの説明（見方・考え方をどう使ったか。友達の話で考えが変わったことも）",
+  理科:"1つの段落で、観察したこと → 分かったこと → この観察を通してよく分かったこと",
+  家庭科:"①今日学習したこと、考えたこと、これから力をつけていきたいこと",
+  国語:"",
+  その他:""
+};
+const typed={};
+let shownSubj=null;
+function isCustomFmt(s){const v=$("custom").value.trim();return v!==""&&v!==DEFFMT[s].trim();}
+function updFmt(){
+  const s=sel.subj,d=DEFFMT[s],c=isCustomFmt(s);
+  $("fmtState").textContent=c?"（変更中）":(d?"（いつもの型）":"（おまかせ）");
+  $("fmtNote").textContent=d?"いつもの型が入っています。変えたいときだけ書き直してください。そのままなら、いつもの型で書きます。":"自分で型を書けます。書かなければ、「やったこと→分かったこと→次に知りたいこと」の流れで書きます。";
+  $("fmtReset").style.display=c?"":"none";
+}
+function loadFmt(){
+  if(shownSubj)typed[shownSubj]=$("custom").value;
+  shownSubj=sel.subj;
+  $("custom").value=(sel.subj in typed)?typed[sel.subj]:DEFFMT[sel.subj];
+  $("fmtDet").open=!DEFFMT[sel.subj];
+  updFmt();
+}
+$("custom").addEventListener("input",()=>{typed[sel.subj]=$("custom").value;updFmt();});
+$("fmtReset").addEventListener("click",()=>{$("custom").value=DEFFMT[sel.subj];typed[sel.subj]=$("custom").value;updFmt();});
+loadFmt();
+
+// ---- 算数の見方・考え方 ----
+const MK=[
+{n:"①",name:"一般化する",desc:"いつでも使えるようにしようとする➡公式にする"},
+{n:"②",name:"一つ分を作る",desc:"1つ分を決めて、そのいくつ分で表す（例：20の3つ分は60になる）"},
+{n:"③",name:"そろえる",desc:"数の位や単位をそろえて比べる（例：2136100と2136300は位をそろえる）"},
+{n:"④",name:"合成・分解する",desc:"合わせたり、分けたりする（例：三角形を2つ合わせると四角形になる）"},
+{n:"⑤",name:"まとめる",desc:"数を10でまとめたり、表やグラフでまとめたりする。説明するための手段にもなる"},
+{n:"⑥",name:"置換する",desc:"問題文から式や図、表、数直線など別のものに置き換える"},
+{n:"⑦",name:"構造化する",desc:"仕組みを明らかにする➡共通点や決まりを見つける。ささいなことも大切"},
+{n:"⑧",name:"概算・概形",desc:"だいたいの数や形➡約〜、〜な形に似ている"},
+{n:"⑨",name:"数や形を変えてみる",desc:"問題の数字を変える・図形の形を変える"},
+{n:"⑩",name:"同類",desc:"前に習ったことと同じようにできないかな？➡前に習った〜と同じ、前に習った〜を使って（例：面積や体積の求め方は整数でも小数でも同じ）"},
+{n:"⑪",name:"日常生活と結びつける",desc:"普段の生活と結び付けて考える"},
+{n:"⑫",name:"比較する",desc:"複数の考えを比べ、比較ポイント（①いつでも ②早く ③簡単に ④正確に ⑤よりよい）を通して結論をだす"}
+];
+const MK_SOC=[
+{n:"",name:"できごとや人々",desc:"見方：工夫、願い、努力、関わり、協力、仕組み、役割、つながりなど"},
+{n:"",name:"時期や時間",desc:"見方：由来（はじまったきっかけ）、変化、発展、継承、向上など"},
+{n:"",name:"位置や空間的な広がり",desc:"見方：位置、分布（どこ？）、はんい、地形、環境、気候、土地利用など"},
+{n:"",name:"理由を考える",desc:"考え方：なぜそうなのか、理由を考える"},
+{n:"",name:"整理して、比べて考える",desc:"考え方：資料などを整理して、比べて考える"},
+{n:"",name:"関連付けて考える",desc:"考え方：ほかのことがらと関連付けて考える"},
+{n:"",name:"自分ならどうするか考える",desc:"考え方：自分ならどうするかを考える"}
+];
+const MKS={算数:MK,社会:MK_SOC};
+const MKSEL={算数:new Set(),社会:new Set()};
+const mkSel=MKSEL["算数"];
+function renderMk(){
+  const list=MKS[sel.subj],box=$("mkBox");
+  if(!list){box.style.display="none";return;}
+  box.style.display="block";
+  const c=$("mkChips");c.textContent="";$("mkDesc").textContent="";
+  const set=MKSEL[sel.subj];
+  list.forEach(m=>{
+    const key=m.n||m.name;
+    const b=document.createElement("button");b.type="button";b.className="chip";
+    b.textContent=(m.n?m.n+" ":"")+m.name;b.setAttribute("aria-pressed",String(set.has(key)));
+    b.addEventListener("click",()=>{
+      const on=!set.has(key);
+      if(on)set.add(key);else set.delete(key);
+      b.setAttribute("aria-pressed",String(on));
+      $("mkDesc").textContent=on?m.name+"："+m.desc:"";
+    });
+    c.append(b);
+  });
+}
+renderMk();
+document.querySelectorAll("[data-g]").forEach(g=>{
+  g.addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    g.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");sel[g.dataset.g]=b.dataset.v;
+    if(g.dataset.g==="subj"){loadFmt();renderList();setPh();renderMk();}
+  });
+});
+$("hints").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  const h=$("hint"),v=b.dataset.h;
+  h.value=h.value?(h.value.includes(v)?h.value:h.value+"。"+v):v;
+});
+
+// ---- 音声入力 ----
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+  const mic=$("mic");mic.classList.remove("hide");
+  let rec=null,on=false,base="";
+  mic.addEventListener("click",()=>{
+    if(on){rec&&rec.stop();return;}
+    try{
+      rec=new SR();rec.lang="ja-JP";rec.interimResults=true;rec.continuous=true;
+      base=$("inp").value?$("inp").value+"\n":"";
+      rec.onresult=e=>{let s="";for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$("inp").value=base+s;};
+      rec.onend=()=>{on=false;mic.textContent="🎤 話して入力";};
+      rec.onerror=()=>{on=false;mic.textContent="🎤 話して入力";};
+      rec.start();on=true;mic.textContent="⏹ 止める";
+    }catch(_){mic.classList.add("hide");}
+  });
+}
+
+// ---- 書き方 ----
+const LEN={
+  社会:{short:"①②③それぞれ1文",mid:"①②③それぞれ2文程度",long:"①②③それぞれ3〜4文"},
+  算数:{short:"①②それぞれ1〜2文",mid:"①は1〜2文、②は3〜4文",long:"①は2文、②は5〜6文"},
+  理科:{short:"3〜4文",mid:"5〜6文（200字前後）",long:"7〜9文（350字前後）"},
+  家庭科:{short:"全体で2〜3文",mid:"全体で4〜5文",long:"全体で6〜8文"},
+  国語:{short:"全体で2〜3文",mid:"全体で150〜200字",long:"全体で300〜400字"},
+  その他:{short:"全体で2〜3文",mid:"全体で150〜200字",long:"全体で300〜400字"}
+};
+const FORMAT={
+社会:`次の形式で書く。項目番号は丸数字（①②③）だけを書き、番号のあとに見出しや項目名は書かず、すぐ本文を続ける。
+①（今日の学習で使った見方・考え方を、「〜という見方・考え方を使って、…」のように具体的な言葉で）
+②（学習を通して気づいたこと・分かったこと）
+③（次の時間に深めたい問い。「なぜ〜だろう」「どうして〜なのか」など、疑問の形で）`,
+算数:`次の形式で書く。項目番号は丸数字（①②）だけを書き、番号のあとに見出しや項目名は書かず、すぐ本文を続ける。「学習の振り返り」などの題も書かない。
+①（今日やった問題・内容と、問題を解くにあたって共通しているポイント）
+②（今日考えたことの説明。具体的に。見方・考え方をどう使ったかを入れる。メモに友達の意見や考えの変化があれば「〇〇さんの話をきいて〜と考えるようになった」のように、考えの変容を書く）`,
+理科:`見出しや番号は使わず、1つの段落の文章で書く。
+流れは「今日は〜を観察（実験）して〜を調べました」→「観察すると〜ということが分かりました」→「この観察を通して〜がよく分かりました」。`,
+家庭科:`次の形式で書く。丸数字①だけを書き、そのあとに見出しは書かず、すぐ本文を続ける。
+①（今日学習したこと → それについて考えたこと → これから力をつけていきたいこと、の順に、ひと続きの文章で）`
+};
+const SCI_EX="今日は、れき岩・砂岩・泥岩や化石などを観察して、それぞれの特徴を調べました。観察すると、れき岩には丸みのあるれきが含まれていて、砂岩には砂の粒、泥岩には細かい泥の粒が集まっていることが分かりました。また、化石を観察することで、昔の生物の様子や当時の環境についても知ることができました。この観察を通して、岩石の種類によって含まれる粒の大きさや特徴が違うことがよく分かりました。";
+
+let sample=null;
+claude.use("sample").then(s=>{sample=s;}).catch(()=>{});
+
+async function run(rewrite){
+  const text=$("inp").value.trim();
+  const err=$("err");err.classList.add("hide");
+  if(!text){err.textContent="授業でやったことを書いてね。";err.classList.remove("hide");return;}
+  let fmt,len;
+  const custom=isCustomFmt(sel.subj);
+  if(custom){
+    fmt=`教科：${sel.subj}\n書き方の指定（この型の項目の順番と数のとおりに書く。項目名や見出しは書かず、番号があれば番号のあとに本文を続ける）：\n${$("custom").value.trim()}`;
+    len=LEN["その他"][sel.len];
+  }else if(FORMAT[sel.subj]){fmt=FORMAT[sel.subj];len=LEN[sel.subj][sel.len];}
+  else{fmt="教科に合わせて「やったこと→分かったこと・気づき→次に知りたいこと」の流れで書く。";len=LEN[sel.subj][sel.len];}
+  let mkText="";
+  if(sel.subj==="社会"){
+    const list=MK_SOC.map(m=>m.name+"："+m.desc).join("\n");
+    const picked=MK_SOC.filter(m=>MKSEL["社会"].has(m.name));
+    mkText="\n\n社会科の見方・考え方の一覧（この学級で使っている言葉）：\n"+list+"\n"+(picked.length
+      ?"今日使った見方・考え方："+picked.map(m=>m.name).join("、")+"。①の中で、この言葉をそのまま使い、どう使ったかを具体的に書く。"
+      :"メモの内容に最も合う見方・考え方を一覧から1〜2個選び、その言葉をそのまま使って①を書く。合わないものは無理に使わない。");
+  }
+  if(sel.subj==="算数"){
+    const list=MK.map(m=>m.n+" "+m.name+"："+m.desc).join("\n");
+    const picked=MK.filter(m=>mkSel.has(m.n));
+    mkText="\n\n算数の見方・考え方の一覧（この学級で使っている言葉）：\n"+list+"\n"+(picked.length
+      ?"今日使った見方・考え方："+picked.map(m=>m.name).join("、")+"。②の中で、この言葉をそのまま使い、どう使ったかを具体的に書く。"
+      :"メモの内容に最も合う見方・考え方を一覧から1〜2個選び、その言葉をそのまま使って②を書く。合わないものは無理に使わない。");
+  }
+  let ex=(data[sel.subj]||[]).slice(-MAXK);
+  if(!ex.length&&sel.subj==="理科")ex=[SCI_EX];
+  if(custom)mkText=mkText.replace(/[①②]の中で/g,"文章の中で").replace(/使って[①②]を書く/g,"使って書く");
+  const exText=ex.length?`\n\nこの子がこれまでに書いた（または気に入っている）振り返りの例です。文体・言い回し・文の長さ・よく使う表現をよく読んで、同じ書き手が書いたように似せてください。ただし内容（出来事や言葉）はそのまま写さないこと。\n${ex.map((t,i)=>`【例${i+1}】\n${t}`).join("\n\n")}`:"";
+  const hint=$("hint").value.trim(), prev=$("out").value.trim();
+  const rwText=(rewrite&&prev)?`\n\n前に書いた振り返り：\n${prev}\n\n${hint?`直してほしいこと：${hint}\nこの指示に合わせて、`:"前の文章とは少し違う言い方で、"}書き直してください。授業でやったこと以外の事実は足さないこと。`:"";
+  if(!sample){sample=await claude.use("sample").catch(()=>null);}
+  if(!sample){err.textContent="文章づくり機能が使えません。ページを開き直すか、権限を許可してください。";err.classList.remove("hide");return;}
+  const btns=[$("go"),$("again")];btns.forEach(b=>b.disabled=true);
+  $("go").textContent="書いています…";
+  $("res").classList.remove("hide");$("out").value="";updCount();
+  const prompt=`あなたは授業の「振り返り」を代わりに書く手伝いをします。
+次の「授業でやったこと」をもとに、小学6年生が自分で書いたような自然な振り返りを日本語で書いてください。
+
+教科：${CUSTOM.includes(sel.subj)?sel.subj:sel.subj}
+書き方：
+${fmt}
+長さ：${len}
+
+共通の条件：
+- 一人称（自分）の視点で、小学6年生らしい言葉づかい（です・ます調）。難しすぎる漢字語は使わない
+- メモに書かれていない出来事・人名・数字は作らない。気づきや考えは、メモの内容から無理のない範囲で言葉にする
+- Markdown記法（#、*、**など）は使わない
+- 見出し・項目名・題（「学習の振り返り」「今日のポイント」など）は書かず、本文だけを書く。丸数字があるときは、番号のすぐあとから本文を始める。お手本に見出しがあっても真似しない
+- 前置きや説明は書かず、振り返りの本文だけを出力する${mkText}${exText}
+
+${$("goal").value.trim()?`今日のめあて（学習問題）：${$("goal").value.trim()}
+（振り返りは、このめあてに合った内容にする。メモにない事実は足さない）
+
+`:""}授業でやったこと：
+${text}${rwText}`;
+  let ok=false;
+  try{
+    await sample(prompt,{cache:false,onText:({text})=>{$("out").value=text;updCount();}});
+    ok=!!$("out").value.trim();
+  }catch(e){
+    if(e&&e.code==="not_granted"){err.textContent="許可されませんでした。もう一度ボタンを押して許可してください。";}
+    else if(e&&e.code==="rate_limited"){err.textContent="少し待ってからもう一度試してください。";}
+    else{err.textContent="うまく書けませんでした。もう一度試してください。";}
+    err.classList.remove("hide");
+    ok=!!$("out").value.trim();
+    if(!ok)$("res").classList.add("hide");
+  }
+  if(ok){
+    const h=rewrite&&hist.find(x=>x.id===curId);
+    if(h){h.text=$("out").value;h.ts=Date.now();}
+    else{curId=String(Date.now());hist.push({id:curId,ts:Date.now(),subj:sel.subj,text:$("out").value});if(hist.length>100)hist.shift();}
+    saveHist();
+  }
+  btns.forEach(b=>b.disabled=false);$("go").textContent="振り返りを書く";
+}
+$("del").addEventListener("click",()=>{$("del").style.display="none";$("delq").classList.remove("hide");});
+$("delno").addEventListener("click",()=>{$("delq").classList.add("hide");$("del").style.display="";});
+$("delyes").addEventListener("click",()=>{
+  if(curId){hist=hist.filter(x=>x.id!==curId);curId=null;saveHist();}
+  $("out").value="";updCount();$("hint").value="";
+  $("res").classList.add("hide");$("delq").classList.add("hide");$("del").style.display="";
+});
+$("go").addEventListener("click",()=>{$("hint").value="";run(false);});
+$("again").addEventListener("click",()=>run(true));
+$("copy").addEventListener("click",async()=>{
+  syncHist();
+  try{await navigator.clipboard.writeText($("out").value);flash($("copy"),"コピーしました ✓","コピー");}
+  catch(_){$("out").select();flash($("copy"),"選択しました（長押しでコピー）","コピー");}
+});
+</script>
+</body>
+</html>
